@@ -20,7 +20,7 @@ namespace Game
 			Console.Error.WriteLine($"var gameState = new {nameof(GameState)} {{ {nameof(currentTurn)} = {currentTurn} }};");
 			foreach (var project in projects)
 				Console.Error.WriteLine($"gameState.projects.Add({project.Dump()});");
-			strategy.Dump($"gameState.{nameof(strategy)}");
+			strategy.Dump("gameState");
 
 		}
 

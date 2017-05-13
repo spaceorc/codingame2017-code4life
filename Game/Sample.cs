@@ -20,5 +20,7 @@
 			this.health = health;
 			cost = new [] { costA, costB, costC, costD, costE };
 		}
+
+		public bool Diagnosed => cost[0] >= 0;
 	}
 }
