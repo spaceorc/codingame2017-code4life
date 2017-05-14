@@ -53,7 +53,7 @@ namespace Game.Types
 			{
 				if (storage[i] + expertise[i] + turnState.available[i] - (usedMolecules?[i] ?? 0) + (additionalExpertise?[i] ?? 0) < sample.cost[i])
 					return false;
-				var extraOfType = sample.cost[i] - (storage[i] + expertise[i] + (additionalExpertise?[i] ?? 0));
+				var extraOfType = sample.cost[i] - (storage[i] - (usedMolecules?[i] ?? 0) + expertise[i] + (additionalExpertise?[i] ?? 0));
 				if (extraOfType > 0)
 					extra += extraOfType;
 			}
