@@ -1,4 +1,6 @@
-﻿namespace Game.Types
+﻿using System.Linq;
+
+namespace Game.Types
 {
 	public class Sample
 	{
@@ -22,5 +24,10 @@
 		}
 
 		public bool Diagnosed => cost[0] >= 0;
+
+		public override string ToString()
+		{
+			return $"{sampleId} [owner:{carriedBy}] rank:{rank}, health:{health}, gain:{gain}, {cost.ToMoleculesString()}";
+		}
 	}
 }

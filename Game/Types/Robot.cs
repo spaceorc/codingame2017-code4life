@@ -21,6 +21,11 @@ namespace Game.Types
 			expertise = new[] {expertiseA, expertiseB, expertiseC, expertiseD, expertiseE};
 		}
 
+		public override string ToString()
+		{
+			return $"{target}[eta:{eta}, score:{score}]: exp={expertise.ToMoleculesString()}, storage={storage.ToMoleculesString()}";
+		}
+
 		public GoToResult GoTo(ModuleType module)
 		{
 			if (target != module || eta != 0)
@@ -41,12 +46,12 @@ namespace Game.Types
 			Console.WriteLine($"CONNECT {moleculeType}");
 		}
 
-		public bool CanGather(TurnState turnState, Sample sample, int[] additionalExpertise = null)
+		public bool CanGather(TurnState turnState, Sample sample, int[] additionalExpertise = null, int[] usedMolecules = null)
 		{
 			var extra = 0;
 			for (var i = 0; i < sample.cost.Length; i++)
 			{
-				if (storage[i] + expertise[i] + turnState.available[i] + (additionalExpertise?[i] ?? 0) < sample.cost[i])
+				if (storage[i] + expertise[i] + turnState.available[i] - (usedMolecules?[i] ?? 0) + (additionalExpertise?[i] ?? 0) < sample.cost[i])
 					return false;
 				var extraOfType = sample.cost[i] - (storage[i] + expertise[i] + (additionalExpertise?[i] ?? 0));
 				if (extraOfType > 0)
@@ -57,11 +62,11 @@ namespace Game.Types
 			return true;
 		}
 
-		public bool CanProduce(Sample sample, int[] additionalExpertise = null)
+		public bool CanProduce(Sample sample, int[] additionalExpertise = null, int[] usedMolecules = null)
 		{
 			for (var i = 0; i < sample.cost.Length; i++)
 			{
-				if (storage[i] + expertise[i] + (additionalExpertise?[i] ?? 0) < sample.cost[i])
+				if (storage[i] - (usedMolecules?[i] ?? 0) + expertise[i] + (additionalExpertise?[i] ?? 0) < sample.cost[i])
 					return false;
 			}
 			return true;

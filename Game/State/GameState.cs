@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Game.Strategy;
 using Game.Types;
 
 namespace Game.State
@@ -9,11 +10,11 @@ namespace Game.State
 	{
 		public int currentTurn;
 		public readonly List<Project> projects = new List<Project>();
-		public readonly Strategy.Strategy strategy;
+		public IRobotStrategy robotStrategy;
 
 		public GameState()
 		{
-			strategy = new Strategy.Strategy(this);
+			robotStrategy = new InitialStrategy(this);
 		}
 
 		public void Dump()
@@ -21,7 +22,7 @@ namespace Game.State
 			Console.Error.WriteLine($"var gameState = new {nameof(GameState)} {{ {nameof(currentTurn)} = {currentTurn} }};");
 			foreach (var project in projects)
 				Console.Error.WriteLine($"gameState.projects.Add({project.Dump()});");
-			strategy.Dump("gameState");
+			robotStrategy.Dump("gameState");
 
 		}
 
@@ -39,7 +40,14 @@ namespace Game.State
 
 			turnState.stopwatch.Restart();
 
-			strategy.Iteration(turnState);
+			while (true)
+			{
+				var newStrategy = robotStrategy.Process(turnState);
+				if (newStrategy == null)
+					break;
+				Console.Error.WriteLine($"New strategy: {newStrategy.GetType().Name}");
+				robotStrategy = newStrategy;
+			}
 
 			turnState.stopwatch.Stop();
 			Console.Error.WriteLine($"Decision made in {turnState.stopwatch.ElapsedMilliseconds} ms");

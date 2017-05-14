@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Game.State;
 using Game.Types;
@@ -15,24 +16,50 @@ namespace Game.Strategy
 
 		public override IRobotStrategy Process(TurnState turnState)
 		{
-			var canGatherSample = turnState.carriedSamples.OrderByDescending(x => x.health).FirstOrDefault(x => turnState.robot.CanGather(turnState, x));
-			if (canGatherSample == null)
-				return new DropStrategy(gameState);
-			if (turnState.robot.CanProduce(canGatherSample))
+			var additionalExpertise = new int[Constants.MOLECULE_TYPE_COUNT];
+			var usedMolecules = new int[Constants.MOLECULE_TYPE_COUNT];
+
+			var samples = turnState.carriedSamples.ToList();
+
+			var producedSamples = new List<Sample>();
+			while (true)
+			{
+				var canProduceSample = samples.FirstOrDefault(x => turnState.robot.CanProduce(x, additionalExpertise, usedMolecules));
+				if (canProduceSample == null)
+					break;
+				for (int i = 0; i < canProduceSample.cost.Length; i++)
+				{
+					var used = canProduceSample.cost[i] - turnState.robot.expertise[i] - additionalExpertise[i];
+					if (used > 0)
+						usedMolecules[i] += used;
+				}
+				additionalExpertise[(int)canProduceSample.gain]++;
+				samples = samples.Except(new[]{ canProduceSample }).ToList();
+				producedSamples.Add(canProduceSample);
+			}
+
+			var canGatherSample = samples.OrderByDescending(x => x.health).FirstOrDefault(x => turnState.robot.CanGather(turnState, x, additionalExpertise, usedMolecules));
+			if (canGatherSample != null)
+			{
+				if (turnState.robot.GoTo(ModuleType.MOLECULES) == GoToResult.Arrived)
+					turnState.robot.Connect(GetUngatheredType(turnState, canGatherSample, additionalExpertise, usedMolecules));
+				return null;
+			}
+
+			if (producedSamples.Any())
 				return new ProduceStrategy(gameState);
-			if (turnState.robot.GoTo(ModuleType.MOLECULES) == GoToResult.Arrived)
-				turnState.robot.Connect(GetUngatheredType(turnState, canGatherSample));
-			return null;
+
+			return new DropStrategy(gameState);
 		}
 
-		private static MoleculeType GetUngatheredType(TurnState turnState, Sample sample, int[] additionalExpertise = null)
+		private static MoleculeType GetUngatheredType(TurnState turnState, Sample sample, int[] additionalExpertise = null, int[] usedMolecules = null)
 		{
 			var robot = turnState.robots[0];
 			var minAvailable = int.MaxValue;
-			var result = MoleculeType.Unknown;
+			var result = (MoleculeType)(-1);
 			for (var i = 0; i < sample.cost.Length; i++)
 			{
-				if (robot.storage[i] + robot.expertise[i] + (additionalExpertise?[i] ?? 0) < sample.cost[i])
+				if (robot.storage[i] - (usedMolecules?[i] ?? 0) + robot.expertise[i] + (additionalExpertise?[i] ?? 0) < sample.cost[i])
 				{
 					if (turnState.available[i] < minAvailable)
 					{
