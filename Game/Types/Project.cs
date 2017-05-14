@@ -1,4 +1,4 @@
-﻿namespace Game
+﻿namespace Game.Types
 {
 	public class Project
 	{

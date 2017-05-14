@@ -1,18 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Game.Types;
 
-namespace Game
+namespace Game.State
 {
 	public class GameState
 	{
 		public int currentTurn;
 		public readonly List<Project> projects = new List<Project>();
-		public readonly Strategy strategy;
+		public readonly Strategy.Strategy strategy;
 
 		public GameState()
 		{
-			strategy = new Strategy(this);
+			strategy = new Strategy.Strategy(this);
 		}
 
 		public void Dump()

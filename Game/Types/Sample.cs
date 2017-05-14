@@ -1,4 +1,4 @@
-﻿namespace Game
+﻿namespace Game.Types
 {
 	public class Sample
 	{
@@ -6,7 +6,7 @@
 		public readonly int carriedBy;
 		public readonly int rank;
 		public readonly string gainString;
-		public readonly int gain;
+		public readonly MoleculeType gain;
 		public readonly int health;
 		public readonly int[] cost;
 
@@ -16,7 +16,7 @@
 			this.carriedBy = carriedBy;
 			this.rank = rank;
 			this.gainString = gainString;
-			gain = this.gainString[0] - 'A';
+			gain = (MoleculeType)(this.gainString[0] - 'A');
 			this.health = health;
 			cost = new [] { costA, costB, costC, costD, costE };
 		}

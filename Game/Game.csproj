@@ -42,17 +42,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Strategy\AnalyzeStrategy.cs" />
+    <Compile Include="Strategy\InitialStrategy.cs" />
+    <Compile Include="Strategy\CollectStrategy.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="Strategy\DropStrategy.cs" />
     <Compile Include="EntryPoint.cs" />
-    <Compile Include="Extensions.cs" />
-    <Compile Include="GameState.cs" />
-    <Compile Include="Project.cs" />
+    <Compile Include="State\GameState.cs" />
+    <Compile Include="Strategy\GatherStrategy.cs" />
+    <Compile Include="Types\GoToResult.cs" />
+    <Compile Include="Strategy\IRobotStrategy.cs" />
+    <Compile Include="Types\ModuleType.cs" />
+    <Compile Include="Types\MoleculeType.cs" />
+    <Compile Include="Strategy\ProduceStrategy.cs" />
+    <Compile Include="Types\Project.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Robot.cs" />
-    <Compile Include="Sample.cs" />
+    <Compile Include="Types\Robot.cs" />
+    <Compile Include="Strategy\RobotStrategyBase.cs" />
+    <Compile Include="Types\Sample.cs" />
     <Compile Include="Settings.cs" />
-    <Compile Include="Strategy.cs" />
-    <Compile Include="TurnState.cs" />
+    <Compile Include="Strategy\Strategy.cs" />
+    <Compile Include="State\TurnState.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

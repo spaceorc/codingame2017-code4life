@@ -2,14 +2,17 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Game.Types;
 
-namespace Game
+namespace Game.State
 {
 	public class TurnState
 	{
 		public readonly List<string> lines = new List<string>();
 		public readonly List<Robot> robots = new List<Robot>();
+		public readonly Robot robot;
 		public readonly List<Sample> samples = new List<Sample>();
+		public readonly List<Sample> carriedSamples = new List<Sample>();
 		public readonly int[] available;
 
 		public readonly Stopwatch stopwatch = Stopwatch.StartNew();
@@ -91,6 +94,9 @@ namespace Game
 
 				samples.Add(new Sample(sampleId, carriedBy, rank, expertiseGain, health, costA, costB, costC, costD, costE));
 			}
+
+			carriedSamples = samples.Where(x => x.carriedBy == 0).ToList();
+			robot = robots[0];
 		}
 	}
 }
