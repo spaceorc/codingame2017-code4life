@@ -31,17 +31,6 @@ namespace Game.Strategy
 			if (minExpertise < Settings.RANK_3_LIMIT)
 				return 2;
 			return 3;
-
-			/*
-			var expertise = robot.expertise.Sum();
-			var cost = turnState.samples.Where(x => x.carriedBy == 0).Select(x => x.cost.Sum()).Sum();
-			var available = turnState.available.Sum();
-			if (available + expertise - cost > Settings.RANK_3_LIMIT)
-				return 3;
-			if (available + expertise - cost > Settings.RANK_2_LIMIT)
-				return 2;
-			return 1;
-			*/
 		}
 	}
 }
