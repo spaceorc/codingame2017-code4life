@@ -25,7 +25,7 @@ namespace Game.Strategy
 		private static int SelectNewSampleRank(TurnState turnState)
 		{
 			var robot = turnState.robots[0];
-			var minExpertise = robot.expertise.Min();
+			var minExpertise = robot.expertise.OrderBy(x => x).Skip(Settings.RANK_MIN_SKIP).First();
 			if (minExpertise < Settings.RANK_2_LIMIT)
 				return 1;
 			if (minExpertise < Settings.RANK_3_LIMIT)

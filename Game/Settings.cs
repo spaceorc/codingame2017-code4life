@@ -7,5 +7,6 @@ namespace Game
 		public static bool DUMP_ALL = true;
 		public static int RANK_3_LIMIT = 2;
 		public static int RANK_2_LIMIT = 1;
+		public static int RANK_MIN_SKIP = 1;
 	}
 }
