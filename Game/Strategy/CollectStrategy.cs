@@ -25,11 +25,17 @@ namespace Game.Strategy
 		private static int SelectNewSampleRank(TurnState turnState)
 		{
 			var robot = turnState.robots[0];
-			var minExpertise = robot.expertise.OrderBy(x => x).Skip(Settings.RANK_MIN_SKIP).First();
-			if (minExpertise < Settings.RANK_2_LIMIT)
+			var min = robot.expertise.OrderBy(x => x).First();
+			var min2 = robot.expertise.OrderBy(x => x).Skip(Settings.RANK_MIN_SKIP).First();
+			if (min2 < Settings.RANK_2_LIMIT)
 				return 1;
-			if (minExpertise < Settings.RANK_3_LIMIT)
+			if (min2 < Settings.RANK_3_LIMIT)
 				return 2;
+			if (min < Settings.RANK_3_LIMIT)
+			{
+				if (!turnState.carriedSamples.Any(x => x.rank < 3))
+					return 2;
+			}
 			return 3;
 		}
 	}

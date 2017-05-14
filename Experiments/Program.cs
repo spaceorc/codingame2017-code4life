@@ -11,28 +11,26 @@ namespace Experiments
 		private static void Main(string[] args)
 		{
 			var state = @"
-MOLECULES 0 0 2 2 4 2 0 0 0 0 0 0
-MOLECULES 0 0 2 3 2 0 3 0 0 0 0 0
-2 1 0 4 3
-6
-0 0 1 B 1 0 1 3 1 0
-2 0 1 E 1 1 2 1 1 0
-4 0 1 D 1 2 0 0 2 0
-1 1 1 A 1 0 2 2 0 1
-3 1 1 D 1 2 1 1 0 1
-5 1 1 C 1 1 1 0 1 2
+MOLECULES 0 40 0 3 2 0 0 0 2 1 0 0
+SAMPLES 0 3 3 3 0 0 0 0 2 1 0 0
+3 0 4 6 6
+3
+6 0 2 C 20 0 5 3 0 0
+7 0 2 B 30 0 6 0 0 0
+8 0 2 C 10 3 0 2 2 0
 ".Trim();
 
 			Settings.DUMP_ALL = true;
 			Settings.DUMP_TURN = -1;
 
 			////===
-			var gameState = new GameState { currentTurn = 50 };
-			gameState.projects.Add(new Project(0, 0, 4, 4, 0));
-			gameState.projects.Add(new Project(0, 4, 4, 0, 0));
+			var gameState = new GameState { currentTurn = 142 };
 			gameState.projects.Add(new Project(3, 3, 3, 0, 0));
+			gameState.projects.Add(new Project(0, 3, 3, 3, 0));
+			gameState.projects.Add(new Project(0, 0, 4, 4, 0));
 			var robotStrategy = new GatherStrategy(gameState);
 			gameState.robotStrategy = robotStrategy;
+
 			////===
 			gameState.Iteration(new StringReader(state));
 		}

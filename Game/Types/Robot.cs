@@ -46,18 +46,18 @@ namespace Game.Types
 			Console.WriteLine($"CONNECT {moleculeType}");
 		}
 
-		public bool CanGather(TurnState turnState, Sample sample, int[] additionalExpertise = null, int[] usedMolecules = null)
+		public bool CanGather(TurnState turnState, Sample sample, int[] additionalExpertise = null, int[] usedMolecules = null, int[] recycledMolecules = null)
 		{
 			var extra = 0;
 			for (var i = 0; i < sample.cost.Length; i++)
 			{
 				if (storage[i] + expertise[i] + turnState.available[i] - (usedMolecules?[i] ?? 0) + (additionalExpertise?[i] ?? 0) < sample.cost[i])
 					return false;
-				var extraOfType = sample.cost[i] - (storage[i] - (usedMolecules?[i] ?? 0) + expertise[i] + (additionalExpertise?[i] ?? 0));
+				var extraOfType = sample.cost[i] - (storage[i] - (usedMolecules?[i] ?? 0) - (recycledMolecules?[i] ?? 0) + expertise[i] + (additionalExpertise?[i] ?? 0));
 				if (extraOfType > 0)
 					extra += extraOfType;
 			}
-			if (storage.Sum() + extra > Constants.MAX_STORAGE)
+			if (storage.Sum() - (recycledMolecules?.Sum() ?? 0) + extra > Constants.MAX_STORAGE)
 				return false;
 			return true;
 		}
