@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Game.State;
 
 namespace Game.Types
@@ -7,9 +6,9 @@ namespace Game.Types
 	public class Robot
 	{
 		public readonly int eta;
-		public readonly int[] expertise;
+		public readonly MoleculeSet expertise;
 		public readonly int score;
-		public readonly int[] storage;
+		public readonly MoleculeSet storage;
 		public readonly ModuleType target;
 
 		public Robot(string target, int eta, int score, int storageA, int storageB, int storageC, int storageD, int storageE, int expertiseA, int expertiseB, int expertiseC, int expertiseD, int expertiseE)
@@ -17,13 +16,13 @@ namespace Game.Types
 			this.target = (ModuleType)Enum.Parse(typeof (ModuleType), target);
 			this.eta = eta;
 			this.score = score;
-			storage = new[] {storageA, storageB, storageC, storageD, storageE};
-			expertise = new[] {expertiseA, expertiseB, expertiseC, expertiseD, expertiseE};
+			storage = new MoleculeSet(storageA, storageB, storageC, storageD, storageE);
+			expertise = new MoleculeSet(expertiseA, expertiseB, expertiseC, expertiseD, expertiseE);
 		}
 
 		public override string ToString()
 		{
-			return $"{target}[eta:{eta}, score:{score}]: exp={expertise.ToMoleculesString()}, storage={storage.ToMoleculesString()}";
+			return $"{target}[eta:{eta}, score:{score}]: exp={expertise}, storage={storage}";
 		}
 
 		public GoToResult GoTo(ModuleType module)
@@ -46,30 +45,31 @@ namespace Game.Types
 			Console.WriteLine($"CONNECT {moleculeType}");
 		}
 
-		public bool CanGather(TurnState turnState, Sample sample, int[] additionalExpertise = null, int[] usedMolecules = null, int[] recycledMolecules = null)
+		public MoleculeSet GetMoleculesToGather(Sample sample, MoleculeSet additionalExpertise = null, MoleculeSet usedMolecules = null)
 		{
-			var extra = 0;
-			for (var i = 0; i < sample.cost.Length; i++)
-			{
-				if (storage[i] + expertise[i] + turnState.available[i] - (usedMolecules?[i] ?? 0) + (additionalExpertise?[i] ?? 0) < sample.cost[i])
-					return false;
-				var extraOfType = sample.cost[i] - (storage[i] - (usedMolecules?[i] ?? 0) - (recycledMolecules?[i] ?? 0) + expertise[i] + (additionalExpertise?[i] ?? 0));
-				if (extraOfType > 0)
-					extra += extraOfType;
-			}
-			if (storage.Sum() - (recycledMolecules?.Sum() ?? 0) + extra > Constants.MAX_STORAGE)
-				return false;
-			return true;
+			var cost = GetCost(sample, additionalExpertise);
+			return cost.Subtract(storage.Subtract(usedMolecules));
 		}
 
-		public bool CanProduce(Sample sample, int[] additionalExpertise = null, int[] usedMolecules = null)
+		public bool CanGather(TurnState turnState, Sample sample, MoleculeSet additionalExpertise = null, MoleculeSet usedMolecules = null, bool recycle = false)
 		{
-			for (var i = 0; i < sample.cost.Length; i++)
-			{
-				if (storage[i] - (usedMolecules?[i] ?? 0) + expertise[i] + (additionalExpertise?[i] ?? 0) < sample.cost[i])
-					return false;
-			}
-			return true;
+			var moleculesToGather = GetMoleculesToGather(sample, additionalExpertise, usedMolecules);
+			var available = turnState.available.Add(recycle ? usedMolecules : null);
+			if (!available.IsSupersetOf(moleculesToGather))
+				return false;
+			var requiredStorage = storage.Add(moleculesToGather).Subtract(recycle ? usedMolecules : null);
+			return requiredStorage.TotalCount <= Constants.MAX_STORAGE;
+		}
+
+		public bool CanProduce(Sample sample, MoleculeSet additionalExpertise = null, MoleculeSet usedMolecules = null)
+		{
+			var moleculesCanUse = storage.Add(expertise).Add(additionalExpertise).Subtract(usedMolecules);
+			return moleculesCanUse.IsSupersetOf(sample.cost);
+		}
+
+		public MoleculeSet GetCost(Sample sample, MoleculeSet additionalExpertise = null)
+		{
+			return sample.cost.Subtract(expertise).Subtract(additionalExpertise);
 		}
 	}
 }

@@ -16,8 +16,8 @@ namespace Game.Strategy
 
 		public override IRobotStrategy Process(TurnState turnState)
 		{
-			var additionalExpertise = new int[Constants.MOLECULE_TYPE_COUNT];
-			var usedMolecules = new int[Constants.MOLECULE_TYPE_COUNT];
+			var additionalExpertise = new MoleculeSet();
+			var usedMolecules = new MoleculeSet();
 
 			var samples = turnState.carriedSamples.ToList();
 
@@ -27,13 +27,8 @@ namespace Game.Strategy
 				var canProduceSample = samples.FirstOrDefault(x => turnState.robot.CanProduce(x, additionalExpertise, usedMolecules));
 				if (canProduceSample == null)
 					break;
-				for (int i = 0; i < canProduceSample.cost.Length; i++)
-				{
-					var used = canProduceSample.cost[i] - turnState.robot.expertise[i] - additionalExpertise[i];
-					if (used > 0)
-						usedMolecules[i] += used;
-				}
-				additionalExpertise[(int)canProduceSample.gain]++;
+				usedMolecules = usedMolecules.Add(turnState.robot.GetCost(canProduceSample, additionalExpertise));
+				additionalExpertise = additionalExpertise.Gain(canProduceSample.gain);
 				samples = samples.Except(new[]{ canProduceSample }).ToList();
 				producedSamples.Add(canProduceSample);
 			}
@@ -42,16 +37,16 @@ namespace Game.Strategy
 			if (canGatherSample != null)
 			{
 				if (turnState.robot.GoTo(ModuleType.MOLECULES) == GoToResult.Arrived)
-					turnState.robot.Connect(GetUngatheredType(turnState, canGatherSample, additionalExpertise, usedMolecules));
+					turnState.robot.Connect(GetMoleculeToGather(turnState, canGatherSample, additionalExpertise, usedMolecules));
 				return null;
 			}
 
-			if (turnState.robot.storage.Sum() < Constants.MAX_STORAGE)
+			if (turnState.robot.storage.TotalCount < Constants.MAX_STORAGE)
 			{
-				canGatherSample = samples.OrderByDescending(x => x.health).FirstOrDefault(x => turnState.robot.CanGather(turnState, x, additionalExpertise, recycledMolecules: usedMolecules));
+				canGatherSample = samples.OrderByDescending(x => x.health).FirstOrDefault(x => turnState.robot.CanGather(turnState, x, additionalExpertise, usedMolecules, recycle: true));
 				if (canGatherSample != null)
 				{
-					var ungatheredType = GetUngatheredType(turnState, canGatherSample, additionalExpertise, usedMolecules);
+					var ungatheredType = GetMoleculeToGather(turnState, canGatherSample, additionalExpertise, usedMolecules);
 					if (ungatheredType != MoleculeType.Unknown)
 					{
 						if (turnState.robot.GoTo(ModuleType.MOLECULES) == GoToResult.Arrived)
@@ -67,19 +62,19 @@ namespace Game.Strategy
 			return new DropStrategy(gameState);
 		}
 
-		private static MoleculeType GetUngatheredType(TurnState turnState, Sample sample, int[] additionalExpertise = null, int[] usedMolecules = null)
+		private static MoleculeType GetMoleculeToGather(TurnState turnState, Sample sample, MoleculeSet additionalExpertise = null, MoleculeSet usedMolecules = null)
 		{
-			var robot = turnState.robots[0];
+			var moleculesToGather = turnState.robot.GetMoleculesToGather(sample, additionalExpertise, usedMolecules);
 			var minAvailable = int.MaxValue;
 			var result = MoleculeType.Unknown;
-			for (var i = 0; i < sample.cost.Length; i++)
+			for (var i = 0; i < moleculesToGather.counts.Length; i++)
 			{
-				if (robot.storage[i] - (usedMolecules?[i] ?? 0) + robot.expertise[i] + (additionalExpertise?[i] ?? 0) < sample.cost[i])
+				if (moleculesToGather.counts[i] > 0)
 				{
-					if (turnState.available[i] < minAvailable && turnState.available[i] > 0)
+					if (turnState.available.counts[i] < minAvailable && turnState.available.counts[i] > 0)
 					{
 						result = (MoleculeType)i;
-						minAvailable = turnState.available[i];
+						minAvailable = turnState.available.counts[i];
 					}
 				}
 			}

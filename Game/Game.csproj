@@ -53,6 +53,7 @@
     <Compile Include="Types\GoToResult.cs" />
     <Compile Include="Strategy\IRobotStrategy.cs" />
     <Compile Include="Types\ModuleType.cs" />
+    <Compile Include="Types\MoleculeSet.cs" />
     <Compile Include="Types\MoleculeType.cs" />
     <Compile Include="Strategy\ProduceStrategy.cs" />
     <Compile Include="Types\Project.cs" />

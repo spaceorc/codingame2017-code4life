@@ -13,7 +13,7 @@ namespace Game.State
 		public readonly Robot robot;
 		public readonly List<Sample> samples = new List<Sample>();
 		public readonly List<Sample> carriedSamples = new List<Sample>();
-		public readonly int[] available;
+		public readonly MoleculeSet available;
 
 		public readonly Stopwatch stopwatch = Stopwatch.StartNew();
 
@@ -32,11 +32,11 @@ namespace Game.State
 			else
 			{
 				foreach (var robot in robots)
-					output.WriteLine($"{robot.target} {robot.eta} {robot.score} {robot.storage[0]} {robot.storage[1]} {robot.storage[2]} {robot.storage[3]} {robot.storage[4]} {robot.expertise[0]} {robot.expertise[1]} {robot.expertise[2]} {robot.expertise[3]} {robot.expertise[4]}");
-				output.WriteLine($"{available[0]} {available[1]} {available[2]} {available[3]} {available[4]}");
+					output.WriteLine($"{robot.target} {robot.eta} {robot.score} {robot.storage.counts[0]} {robot.storage.counts[1]} {robot.storage.counts[2]} {robot.storage.counts[3]} {robot.storage.counts[4]} {robot.expertise.counts[0]} {robot.expertise.counts[1]} {robot.expertise.counts[2]} {robot.expertise.counts[3]} {robot.expertise.counts[4]}");
+				output.WriteLine($"{available.counts[0]} {available.counts[1]} {available.counts[2]} {available.counts[3]} {available.counts[4]}");
 				output.WriteLine($"{samples.Count}");
 				foreach (var sample in samples)
-					output.WriteLine($"{sample.sampleId} {sample.carriedBy} {sample.rank} {sample.gainString} {sample.health} {sample.cost[0]} {sample.cost[1]} {sample.cost[2]} {sample.cost[3]} {sample.cost[4]}");
+					output.WriteLine($"{sample.sampleId} {sample.carriedBy} {sample.rank} {sample.gainString} {sample.health} {sample.cost.counts[0]} {sample.cost.counts[1]} {sample.cost.counts[2]} {sample.cost.counts[3]} {sample.cost.counts[4]}");
 			}
 		}
 
@@ -72,7 +72,7 @@ namespace Game.State
 			var availableC = int.Parse(inputs[2]);
 			var availableD = int.Parse(inputs[3]);
 			var availableE = int.Parse(inputs[4]);
-			available = new[] {availableA, availableB, availableC, availableD, availableE};
+			available = new MoleculeSet(availableA, availableB, availableC, availableD, availableE);
 			line = input.ReadLine();
 			lines.Add(line);
 			var sampleCount = int.Parse(line);

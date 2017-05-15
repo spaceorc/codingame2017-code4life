@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace Game.Types
+﻿namespace Game.Types
 {
 	public class Sample
 	{
@@ -10,7 +8,7 @@ namespace Game.Types
 		public readonly string gainString;
 		public readonly MoleculeType gain;
 		public readonly int health;
-		public readonly int[] cost;
+		public readonly MoleculeSet cost;
 
 		public Sample(int sampleId, int carriedBy, int rank, string gainString, int health, int costA, int costB, int costC, int costD, int costE)
 		{
@@ -20,14 +18,14 @@ namespace Game.Types
 			this.gainString = gainString;
 			gain = (MoleculeType)(this.gainString[0] - 'A');
 			this.health = health;
-			cost = new [] { costA, costB, costC, costD, costE };
+			cost = new MoleculeSet(costA, costB, costC, costD, costE);
 		}
 
-		public bool Diagnosed => cost[0] >= 0;
+		public bool Diagnosed => cost.counts[0] >= 0;
 
 		public override string ToString()
 		{
-			return $"{sampleId} [owner:{carriedBy}] rank:{rank}, health:{health}, gain:{gain}, {cost.ToMoleculesString()}";
+			return $"{sampleId} [owner:{carriedBy}] rank:{rank}, health:{health}, gain:{gain}, {cost}";
 		}
 	}
 }
