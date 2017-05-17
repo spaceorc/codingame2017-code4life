@@ -1,10 +1,10 @@
 ﻿using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Game.State;
 using Game.Types;
 
 namespace Game.Strategy
 {
+	// pack: 0
 	public class CollectStrategy : RobotStrategyBase
 	{
 		private readonly GameState gameState;
@@ -19,37 +19,36 @@ namespace Game.Strategy
 			if (turnState.robot.samples.Count == Constants.MAX_TRAY)
 				return new AnalyzeStrategy(gameState);
 			if (turnState.robot.GoTo(ModuleType.SAMPLES) == GoToResult.Arrived)
-				turnState.robot.Connect(SelectNewSampleRank(turnState));
+				turnState.robot.Connect(SelectNewSampleRank(turnState.robot));
 			return null;
 		}
 
-		private static int SelectNewSampleRank(TurnState turnState)
+		private static int SelectNewSampleRank(Robot robot)
 		{
-			var robot = turnState.robots[0];
 			var sum = robot.expertise.totalCount;
-			if (sum < 3)
+			if (sum < 4)
 				return 1;
-			if (sum < 5)
+			if (sum < 6)
 			{
-				if (turnState.robot.samples.Count(x => x.rank == 1) < 2)
+				if (robot.samples.Count(x => x.rank == 1) < 2)
 					return 1;
 				return 2;
 			}
-			if (sum < 7)
+			if (sum < 8)
 			{
-				if (turnState.robot.samples.Count(x => x.rank == 1) < 1)
+				if (robot.samples.Count(x => x.rank == 1) < 1)
 					return 1;
 				return 2;
 			}
-			if (sum < 9)
+			if (sum < 10)
 			{
-				if (turnState.robot.samples.Count(x => x.rank == 2) < 2)
+				if (robot.samples.Count(x => x.rank == 2) < 2)
 					return 2;
 				return 3;
 			}
-			if (sum < 11)
+			if (sum < 12)
 			{
-				if (turnState.robot.samples.Count(x => x.rank == 2) < 1)
+				if (robot.samples.Count(x => x.rank == 2) < 1)
 					return 2;
 				return 3;
 			}
