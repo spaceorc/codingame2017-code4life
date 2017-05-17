@@ -15,10 +15,10 @@ namespace Game.Strategy
 
 		public override IRobotStrategy Process(TurnState turnState)
 		{
-			if (turnState.carriedSamples.All(x => x.Diagnosed))
+			if (turnState.robot.samples.All(x => x.Diagnosed))
 				return new GatherStrategy(gameState);
 			if (turnState.robot.GoTo(ModuleType.DIAGNOSIS) == GoToResult.Arrived)
-				turnState.robot.Connect(turnState.carriedSamples.First(x => !x.Diagnosed).sampleId);
+				turnState.robot.Connect(turnState.robot.samples.First(x => !x.Diagnosed).sampleId);
 			return null;
 		}
 	}

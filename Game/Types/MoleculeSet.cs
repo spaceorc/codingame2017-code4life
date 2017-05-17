@@ -1,10 +1,13 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Game.Types
 {
 	public class MoleculeSet
 	{
 		public readonly int[] counts;
+		public readonly int totalCount;
 
 		public MoleculeSet()
 			: this(new int[Constants.MOLECULE_TYPE_COUNT])
@@ -14,6 +17,7 @@ namespace Game.Types
 		public MoleculeSet(int[] counts)
 		{
 			this.counts = counts;
+			totalCount = counts.Sum();
 		}
 
 		public MoleculeSet(int a, int b, int c, int d, int e)
@@ -21,17 +25,26 @@ namespace Game.Types
 		{
 		}
 
-		public int TotalCount => counts.Sum();
+		public int this[MoleculeType type] => counts[(int)type];
 
 		public override string ToString()
 		{
 			return counts.ToMoleculesString();
 		}
 
-		public MoleculeSet Gain(MoleculeType gain)
+		public MoleculeSet Add(MoleculeType gain)
 		{
 			var res = counts.ToArray();
 			res[(int)gain]++;
+			return new MoleculeSet(res);
+		}
+
+		public MoleculeSet Subtract(MoleculeType gain)
+		{
+			var res = counts.ToArray();
+			if (res[(int)gain] == 0)
+				throw new InvalidOperationException("res[(int)gain] == 0");
+			res[(int)gain]--;
 			return new MoleculeSet(res);
 		}
 

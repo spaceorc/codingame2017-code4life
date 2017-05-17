@@ -15,7 +15,7 @@ namespace Game.Strategy
 
 		public override IRobotStrategy Process(TurnState turnState)
 		{
-			if (turnState.carriedSamples.Count == Constants.MAX_TRAY)
+			if (turnState.robot.samples.Count == Constants.MAX_TRAY)
 				return new AnalyzeStrategy(gameState);
 			if (turnState.robot.GoTo(ModuleType.SAMPLES) == GoToResult.Arrived)
 				turnState.robot.Connect(SelectNewSampleRank(turnState));
@@ -33,7 +33,7 @@ namespace Game.Strategy
 				return 2;
 			if (min < Settings.RANK_3_LIMIT)
 			{
-				if (!turnState.carriedSamples.Any(x => x.rank < 3))
+				if (!turnState.robot.samples.Any(x => x.rank < 3))
 					return 2;
 			}
 			return 3;

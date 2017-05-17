@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Game.State;
@@ -19,7 +20,7 @@ namespace Game.Strategy
 			var additionalExpertise = new MoleculeSet();
 			var usedMolecules = new MoleculeSet();
 
-			var samples = turnState.carriedSamples.ToList();
+			var samples = turnState.robot.samples.ToList();
 
 			var producedSamples = new List<Sample>();
 			while (true)
@@ -28,7 +29,7 @@ namespace Game.Strategy
 				if (canProduceSample == null)
 					break;
 				usedMolecules = usedMolecules.Add(turnState.robot.GetCost(canProduceSample, additionalExpertise));
-				additionalExpertise = additionalExpertise.Gain(canProduceSample.gain);
+				additionalExpertise = additionalExpertise.Add(canProduceSample.gain);
 				samples = samples.Except(new[]{ canProduceSample }).ToList();
 				producedSamples.Add(canProduceSample);
 			}
@@ -41,7 +42,7 @@ namespace Game.Strategy
 				return null;
 			}
 
-			if (turnState.robot.storage.TotalCount < Constants.MAX_STORAGE)
+			if (turnState.robot.storage.totalCount < Constants.MAX_STORAGE)
 			{
 				canGatherSample = samples.OrderByDescending(x => x.health).FirstOrDefault(x => turnState.robot.CanGather(turnState, x, additionalExpertise, usedMolecules, recycle: true));
 				if (canGatherSample != null)

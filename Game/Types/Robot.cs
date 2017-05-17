@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Game.State;
 
 namespace Game.Types
@@ -10,6 +11,7 @@ namespace Game.Types
 		public readonly int score;
 		public readonly MoleculeSet storage;
 		public readonly ModuleType target;
+		public readonly List<Sample> samples = new List<Sample>();
 
 		public Robot(string target, int eta, int score, int storageA, int storageB, int storageC, int storageD, int storageE, int expertiseA, int expertiseB, int expertiseC, int expertiseD, int expertiseE)
 		{
@@ -58,7 +60,7 @@ namespace Game.Types
 			if (!available.IsSupersetOf(moleculesToGather))
 				return false;
 			var requiredStorage = storage.Add(moleculesToGather).Subtract(recycle ? usedMolecules : null);
-			return requiredStorage.TotalCount <= Constants.MAX_STORAGE;
+			return requiredStorage.totalCount <= Constants.MAX_STORAGE;
 		}
 
 		public bool CanProduce(Sample sample, MoleculeSet additionalExpertise = null, MoleculeSet usedMolecules = null)
