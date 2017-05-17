@@ -17,6 +17,27 @@ namespace Game.Strategy
 
 		public override IRobotStrategy Process(TurnState turnState)
 		{
+			//var eadditionalExpertise = new MoleculeSet();
+			//var eusedMolecules = new MoleculeSet();
+
+			//var esamples = turnState.enemy.samples.ToList();
+
+			//var eproducedSamples = new List<Sample>();
+			//while (true)
+			//{
+			//	var canProduceSample = esamples.FirstOrDefault(x => turnState.enemy.CanProduce(x, eadditionalExpertise, eusedMolecules));
+			//	if (canProduceSample == null)
+			//		break;
+			//	eusedMolecules = eusedMolecules.Add(turnState.enemy.GetCost(canProduceSample, eadditionalExpertise));
+			//	eadditionalExpertise = eadditionalExpertise.Add(canProduceSample.gain);
+			//	esamples = esamples.Except(new[] { canProduceSample }).ToList();
+			//	eproducedSamples.Add(canProduceSample);
+			//}
+
+
+
+
+
 			var additionalExpertise = new MoleculeSet();
 			var usedMolecules = new MoleculeSet();
 
@@ -34,9 +55,17 @@ namespace Game.Strategy
 				producedSamples.Add(canProduceSample);
 			}
 
+			//var turnsToProduce = producedSamples.Count + turnState.robot.eta + Constants.distances[Tuple.Create(turnState.robot.target, ModuleType.LABORATORY)];
+			
 			var canGatherSample = samples.OrderByDescending(x => x.health).FirstOrDefault(x => turnState.robot.CanGather(turnState, x, additionalExpertise, usedMolecules));
 			if (canGatherSample != null)
 			{
+				var turnsToGatherAndProduce = (producedSamples.Count + turnState.robot.eta + Constants.distances[Tuple.Create(turnState.robot.target, ModuleType.MOLECULES)]
+					+ turnState.robot.GetMoleculesToGather(canGatherSample, additionalExpertise, usedMolecules).totalCount + Constants.distances[Tuple.Create(turnState.robot.target, ModuleType.LABORATORY)]
+					+ 1) * 2;
+				if (gameState.currentTurn + turnsToGatherAndProduce > Constants.TOTAL_TURNS && producedSamples.Any())
+					return new ProduceStrategy(gameState);
+
 				if (turnState.robot.GoTo(ModuleType.MOLECULES) == GoToResult.Arrived)
 					turnState.robot.Connect(GetMoleculeToGather(turnState, canGatherSample, additionalExpertise, usedMolecules));
 				return null;
