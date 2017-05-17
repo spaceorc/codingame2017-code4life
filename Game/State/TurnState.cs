@@ -11,8 +11,11 @@ namespace Game.State
 		public readonly List<string> lines = new List<string>();
 		public readonly List<Robot> robots = new List<Robot>();
 		public readonly Robot robot;
+		public readonly Robot enemy;
 		public readonly List<Sample> samples = new List<Sample>();
 		public readonly List<Sample> carriedSamples = new List<Sample>();
+		public readonly List<Sample> cloudSamples = new List<Sample>();
+		public readonly List<Sample> enemySamples = new List<Sample>();
 		public readonly MoleculeSet available;
 
 		public readonly Stopwatch stopwatch = Stopwatch.StartNew();
@@ -96,7 +99,10 @@ namespace Game.State
 			}
 
 			carriedSamples = samples.Where(x => x.carriedBy == 0).ToList();
+			cloudSamples = samples.Where(x => x.carriedBy == -1).ToList();
+			enemySamples = samples.Where(x => x.carriedBy == 1).ToList();
 			robot = robots[0];
+			enemy = robots[1];
 		}
 	}
 }
