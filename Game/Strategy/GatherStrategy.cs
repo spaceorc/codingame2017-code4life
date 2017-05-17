@@ -73,6 +73,35 @@ namespace Game.Strategy
 
 			if (turnState.robot.storage.totalCount < Constants.MAX_STORAGE)
 			{
+				if (turnState.robot.target == ModuleType.MOLECULES && turnState.robot.eta == 0)
+				{
+					var enemySamples = turnState.enemy.samples.Where(x => !turnState.enemy.CanProduce(x) && turnState.enemy.CanGather(turnState, x)).OrderByDescending(x => x.health).ToList();
+					foreach (var enemySample in enemySamples)
+					{
+						var moleculesToGather = turnState.enemy.GetMoleculesToGather(enemySample);
+						var restMolecules = turnState.available.Subtract(moleculesToGather);
+						var mini = -1;
+						var min = int.MaxValue;
+						for (int i = 0; i < Constants.MOLECULE_TYPE_COUNT; i++)
+						{
+							if (moleculesToGather.counts[i] > 0)
+							{
+								var need = restMolecules.counts[i] + 1;
+								if (need < min)
+								{
+									mini = i;
+									min = need;
+								}
+							}
+						}
+						if (mini != -1 && turnState.robot.storage.totalCount + min < Constants.MAX_STORAGE)
+						{
+							turnState.robot.Connect((MoleculeType)mini);
+							return null;
+						}
+					}
+				}
+
 				canGatherSample = samples.OrderByDescending(x => x.health).FirstOrDefault(x => turnState.robot.CanGather(turnState, x, additionalExpertise, usedMolecules, recycle: true));
 				if (canGatherSample != null)
 				{
