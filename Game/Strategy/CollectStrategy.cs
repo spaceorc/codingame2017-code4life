@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Game.State;
 using Game.Types;
 
@@ -25,16 +26,32 @@ namespace Game.Strategy
 		private static int SelectNewSampleRank(TurnState turnState)
 		{
 			var robot = turnState.robots[0];
-			var min = robot.expertise.counts.OrderBy(x => x).First();
-			var min2 = robot.expertise.counts.OrderBy(x => x).Skip(Settings.RANK_MIN_SKIP).First();
-			if (min2 < Settings.RANK_2_LIMIT)
+			var sum = robot.expertise.totalCount;
+			if (sum < 3)
 				return 1;
-			if (min2 < Settings.RANK_3_LIMIT)
-				return 2;
-			if (min < Settings.RANK_3_LIMIT)
+			if (sum < 5)
 			{
-				if (!turnState.robot.samples.Any(x => x.rank < 3))
+				if (turnState.robot.samples.Count(x => x.rank == 1) < 2)
+					return 1;
+				return 2;
+			}
+			if (sum < 7)
+			{
+				if (turnState.robot.samples.Count(x => x.rank == 1) < 1)
+					return 1;
+				return 2;
+			}
+			if (sum < 9)
+			{
+				if (turnState.robot.samples.Count(x => x.rank == 2) < 2)
 					return 2;
+				return 3;
+			}
+			if (sum < 11)
+			{
+				if (turnState.robot.samples.Count(x => x.rank == 2) < 1)
+					return 2;
+				return 3;
 			}
 			return 3;
 		}
