@@ -26,27 +26,27 @@ namespace Game.Strategy
 		private static int SelectNewSampleRank(Robot robot)
 		{
 			var sum = robot.expertise.totalCount;
-			if (sum < 4)
+			if (sum < 5)
 				return 1;
-			if (sum < 6)
+			if (sum < 7)
 			{
 				if (robot.samples.Count(x => x.rank == 1) < 2)
 					return 1;
 				return 2;
 			}
-			if (sum < 8)
+			if (sum < 9)
 			{
 				if (robot.samples.Count(x => x.rank == 1) < 1)
 					return 1;
 				return 2;
 			}
-			if (sum < 10)
+			if (sum < 11)
 			{
 				if (robot.samples.Count(x => x.rank == 2) < 2)
 					return 2;
 				return 3;
 			}
-			if (sum < 12)
+			if (sum < 13)
 			{
 				if (robot.samples.Count(x => x.rank == 2) < 1)
 					return 2;
