@@ -6,6 +6,52 @@ using Game.Types;
 
 namespace Game.Strategy
 {
+	public class ProduceOrderer
+	{
+		public MoleculeSet additionalExpertise = new MoleculeSet();
+		public MoleculeSet usedMolecules = new MoleculeSet();
+		public List<Sample> producedSamples = new List<Sample>();
+		public List<Sample> samples = new List<Sample>();
+
+		public ProduceOrderer(Robot robot)
+		{
+			var maxHealth = int.MinValue;
+			var maxMinExpertise = int.MinValue;
+			var minMinExpertiseCount = int.MaxValue;
+			foreach (var samples in robot.samples.Where(x => x.Diagnosed).ToList().GetPermutations())
+			{
+				var additionalExpertise = new MoleculeSet();
+				var usedMolecules = new MoleculeSet();
+				var producedSamples = new List<Sample>();
+				foreach (var sample in samples)
+				{
+					if (robot.CanProduce(sample, additionalExpertise, usedMolecules))
+					{
+						usedMolecules = usedMolecules.Add(robot.GetCost(sample, additionalExpertise));
+						additionalExpertise = additionalExpertise.Add(sample.gain);
+						producedSamples.Add(sample);
+					}
+				}
+				var health = producedSamples.Sum(x => x.health);
+				var expertise = robot.expertise.Add(additionalExpertise);
+				var minExpertise = expertise.counts.Min();
+				var minExpertiseCount = expertise.counts.Count(t => t == minExpertise);
+				if (health > maxHealth
+					|| health == maxHealth && minExpertise > maxMinExpertise
+					|| health == maxHealth && minExpertise == maxMinExpertise && minExpertiseCount < minMinExpertiseCount)
+				{
+					maxHealth = health;
+					maxMinExpertise = minExpertise;
+					minMinExpertiseCount = minExpertiseCount;
+					this.additionalExpertise = additionalExpertise;
+					this.usedMolecules = usedMolecules;
+					this.producedSamples = producedSamples;
+					this.samples = samples.Except(this.producedSamples).ToList();
+				}
+			}
+		}
+	}
+
 	public class GatherStrategy : RobotStrategyBase
 	{
 		private readonly GameState gameState;
