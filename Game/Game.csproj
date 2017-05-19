@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Strategy\AnalyzeStrategy.cs" />
+    <Compile Include="Strategy\Extensions.cs" />
     <Compile Include="Strategy\Heap.cs" />
     <Compile Include="Strategy\InitialStrategy.cs" />
     <Compile Include="Strategy\CollectStrategy.cs" />
