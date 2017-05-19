@@ -69,14 +69,14 @@ namespace Game.Strategy
 				if (turnState.robot.GoTo(ModuleType.MOLECULES) == GoToResult.OnTheWay)
 					return null;
 				var myMoleculesToGather = turnState.robot.GetMoleculesToGather(canGatherSample, additionalExpertise, usedMolecules);
-				var enemySamples = turnState.enemy.samples.Where(x => !turnState.enemy.CanProduce(x) && turnState.enemy.CanGather(turnState, x)).OrderByDescending(x => x.health).ToList();
+				var enemySamples = turnState.enemy.samples.Where(x => x.Diagnosed && !turnState.enemy.CanProduce(x) && turnState.enemy.CanGather(turnState, x)).OrderByDescending(x => x.health).ToList();
 				foreach (var enemySample in enemySamples)
 				{
 					var enemyMoleculesToGather = turnState.enemy.GetMoleculesToGather(enemySample);
 					var totalMoleculesToGather = myMoleculesToGather.Add(enemyMoleculesToGather);
 					var overlayMolecules = totalMoleculesToGather.Subtract(turnState.available);
 					var maxi = -1;
-					var max = int.MinValue;
+					var max = 0;
 					for (int i = 0; i < Constants.MOLECULE_TYPE_COUNT; i++)
 					{
 						if (overlayMolecules.counts[i] > max && myMoleculesToGather.counts[i] > 0)
@@ -99,7 +99,7 @@ namespace Game.Strategy
 			{
 				if (turnState.robot.target == ModuleType.MOLECULES && turnState.robot.eta == 0)
 				{
-					var enemySamples = turnState.enemy.samples.Where(x => !turnState.enemy.CanProduce(x) && turnState.enemy.CanGather(turnState, x)).OrderByDescending(x => x.health).ToList();
+					var enemySamples = turnState.enemy.samples.Where(x => x.Diagnosed && !turnState.enemy.CanProduce(x) && turnState.enemy.CanGather(turnState, x)).OrderByDescending(x => x.health).ToList();
 					foreach (var enemySample in enemySamples)
 					{
 						var moleculesToGather = turnState.enemy.GetMoleculesToGather(enemySample);
