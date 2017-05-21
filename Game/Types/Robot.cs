@@ -48,16 +48,21 @@ namespace Game.Types
 			Console.WriteLine($"CONNECT {moleculeType}");
 		}
 
+		public void Wait()
+		{
+			Console.WriteLine("WAIT");
+		}
+
 		public MoleculeSet GetMoleculesToGather(Sample sample, MoleculeSet additionalExpertise = null, MoleculeSet usedMolecules = null)
 		{
 			var cost = GetCost(sample, additionalExpertise);
 			return cost.Subtract(storage.Subtract(usedMolecules));
 		}
-
-		public bool CanGather(TurnState turnState, Sample sample, MoleculeSet additionalExpertise = null, MoleculeSet usedMolecules = null, bool recycle = false)
+		
+		public bool CanGather(TurnState turnState, Sample sample, MoleculeSet additionalExpertise = null, MoleculeSet usedMolecules = null, bool recycle = false, MoleculeSet comingSoonMolecules = null)
 		{
 			var moleculesToGather = GetMoleculesToGather(sample, additionalExpertise, usedMolecules);
-			var available = turnState.available.Add(recycle ? usedMolecules : null);
+			var available = turnState.available.Add(recycle ? usedMolecules : null).Add(comingSoonMolecules);
 			if (!available.IsSupersetOf(moleculesToGather))
 				return false;
 			var requiredStorage = storage.Add(moleculesToGather).Subtract(recycle ? usedMolecules : null);
