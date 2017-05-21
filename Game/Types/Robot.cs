@@ -48,9 +48,14 @@ namespace Game.Types
 			Console.WriteLine($"CONNECT {moleculeType}");
 		}
 
-		public void Wait()
+		public void Wait(string message = null)
 		{
-			Console.WriteLine("WAIT");
+			Console.WriteLine($"WAIT {message}");
+		}
+
+		public bool At(ModuleType moduleType)
+		{
+			return target == moduleType && eta == 0;
 		}
 
 		public MoleculeSet GetMoleculesToGather(Sample sample, MoleculeSet additionalExpertise = null, MoleculeSet usedMolecules = null)

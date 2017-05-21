@@ -83,5 +83,30 @@ namespace Game.Types
 			}
 			return new MoleculeSet(res);
 		}
+
+		public MoleculeSet Intersect(MoleculeSet other)
+		{
+			if (other == null)
+				return this;
+			var res = counts.ToArray();
+			for (var i = 0; i < counts.Length; i++)
+				res[i] = Math.Min(res[i], other.counts[i]);
+			return new MoleculeSet(res);
+		}
+
+		public MoleculeType Max()
+		{
+			var max = int.MinValue;
+			int maxi = -1;
+			for (var i = 0; i < counts.Length; i++)
+			{
+				if (counts[i] > max)
+				{
+					max = counts[i];
+					maxi = i;
+				}
+			}
+			return (MoleculeType)maxi;
+		}
 	}
 }

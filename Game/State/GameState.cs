@@ -40,11 +40,18 @@ namespace Game.State
 
 			turnState.stopwatch.Restart();
 
+			int decisionCounter = 0;
 			while (true)
 			{
 				var newStrategy = robotStrategy.Process(turnState);
 				if (newStrategy == null)
 					break;
+				if (++decisionCounter > 20)
+				{
+					Console.Error.WriteLine("Couldn't decide!");
+					turnState.robot.Wait("Couldn't decide!");
+					break;
+				}
 				Console.Error.WriteLine($"New strategy: {newStrategy.GetType().Name}");
 				robotStrategy = newStrategy;
 			}
