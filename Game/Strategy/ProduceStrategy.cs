@@ -15,8 +15,8 @@ namespace Game.Strategy
 
 		public override IRobotStrategy Process(TurnState turnState)
 		{
-			var produceOrder = new ProduceOrder(gameState, turnState.robot);
-			var canProduceSample = produceOrder.producedSamples.FirstOrDefault();
+			var produceOrder = ProduceOrder.GetProduceOrders(gameState, turnState.robot).SelectBestOrder(new ProduceOrderDefaultComparer(turnState.robot));
+			var canProduceSample = produceOrder?.producedSamples.FirstOrDefault();
 			if (canProduceSample == null)
 				return new GatherStrategy(gameState);
 			if (turnState.robot.GoTo(ModuleType.LABORATORY) == GoToResult.Arrived)

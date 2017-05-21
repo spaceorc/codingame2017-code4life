@@ -8,26 +8,27 @@ namespace Game.Strategy
 {
 	public class GatherOrder
 	{
-		public MoleculeSet additionalExpertise = new MoleculeSet();
-		public MoleculeSet usedMolecules = new MoleculeSet();
-		public List<GatheredSample> producedSamples = new List<GatheredSample>();
-		public List<GatheredSample> gatheredSamples = new List<GatheredSample>();
-		public List<GatheredSample> gatheredNowSamples = new List<GatheredSample>();
-		public List<GatheredSample> gatheredSoonSamples = new List<GatheredSample>();
-		public List<GatheredSample> gatheredAfterRecycleSamples = new List<GatheredSample>();
-		public List<Sample> samplesLeft = new List<Sample>();
-		public int eta;
+		public readonly MoleculeSet additionalExpertise;
+		public readonly MoleculeSet usedMolecules;
+		public readonly List<GatheredSample> producedSamples;
+		public readonly List<GatheredSample> gatheredSamples;
+		public readonly List<GatheredSample> gatheredNowSamples;
+		public readonly List<GatheredSample> gatheredSoonSamples;
+		public readonly List<GatheredSample> gatheredAfterRecycleSamples;
+		public readonly List<Sample> samplesLeft;
+		public readonly List<Sample> variant;
+		public readonly int eta;
+		public readonly int health;
 
-		public GatherOrder(GameState gameState, TurnState turnState, Robot robot)
+		public static IEnumerable<GatherOrder> GetGatherOrders(GameState gameState, TurnState turnState, Robot robot, List<Sample> robotSamples = null)
 		{
 			var enemy = turnState.robots.Single(x => x != robot);
-			var enemyProduceOrder = enemy.target == ModuleType.LABORATORY ? new ProduceOrder(gameState, enemy) : null;
+			var enemyProduceOrder = enemy.target == ModuleType.LABORATORY
+				? ProduceOrder.GetProduceOrders(gameState, enemy).SelectBestOrder(new ProduceOrderDefaultComparer(enemy))
+				: null;
 
-			var maxHealth = int.MinValue;
-			var maxMinExpertise = int.MinValue;
-			var minMinExpertiseCount = int.MaxValue;
-			samplesLeft = robot.samples.ToList();
-			foreach (var samples in robot.samples.Where(x => x.Diagnosed).ToList().GetPermutations())
+			robotSamples = robotSamples ?? robot.samples;
+			foreach (var samples in robotSamples.Where(x => x.Diagnosed).ToList().GetVariants())
 			{
 				var additionalExpertise = new MoleculeSet();
 				var usedMolecules = new MoleculeSet();
@@ -82,48 +83,47 @@ namespace Game.Strategy
 					eta += enemyProduceOrder?.eta ?? 0;
 				if (gatheredSamples.Any() || producedSamples.Any())
 				{
-					if (gameState.currentTurn + eta * 2 <= Constants.TOTAL_TURNS)
+					if (gameState.currentTurn + eta*2 <= Constants.TOTAL_TURNS)
 					{
-						var expertise = robot.expertise.Add(additionalExpertise);
-						var minExpertise = expertise.counts.Min();
-						var minExpertiseCount = expertise.counts.Count(t => t == minExpertise);
-						if (health > maxHealth
-						    
-							|| health == maxHealth 
-							&& usedMolecules.totalCount < this.usedMolecules.totalCount
-
-						    || health == maxHealth && usedMolecules.totalCount == this.usedMolecules.totalCount 
-							&& gatheredSamples.TakeWhile(x => x.type == GatheredSampleType.Gathered).Count() > this.gatheredSamples.TakeWhile(x => x.type == GatheredSampleType.Gathered).Count()
-
-							|| health == maxHealth && usedMolecules.totalCount == this.usedMolecules.totalCount && gatheredSamples.TakeWhile(x => x.type == GatheredSampleType.Gathered).Count() == this.gatheredSamples.TakeWhile(x => x.type == GatheredSampleType.Gathered).Count()
-							&& minExpertise > maxMinExpertise
-
-						    || health == maxHealth && usedMolecules.totalCount == this.usedMolecules.totalCount && gatheredSamples.TakeWhile(x => x.type == GatheredSampleType.Gathered).Count() == this.gatheredSamples.TakeWhile(x => x.type == GatheredSampleType.Gathered).Count() && minExpertise == maxMinExpertise
-							&& minExpertiseCount < minMinExpertiseCount)
-						{
-							maxHealth = health;
-							maxMinExpertise = minExpertise;
-							minMinExpertiseCount = minExpertiseCount;
-							this.additionalExpertise = additionalExpertise;
-							this.usedMolecules = usedMolecules;
-							this.producedSamples = producedSamples;
-							this.gatheredSamples = gatheredSamples;
-							this.gatheredNowSamples = gatheredNowSamples;
-							this.gatheredSoonSamples = gatheredSoonSamples;
-							samplesLeft = samples
-								.Except(producedSamples.Select(x => x.sample))
-								.Except(gatheredSamples.Select(x => x.sample))
-								.ToList();
-							this.eta = eta;
-							gatheredAfterRecycleSamples = samplesLeft
-								.Where(x => robot.CanGather(turnState, x, additionalExpertise, usedMolecules, recycle: true, comingSoonMolecules: enemyProduceOrder?.usedMolecules))
-								.Select(x => new GatheredSample(x, robot.GetHealth(gameState, x, additionalExpertise), GatheredSampleType.GatheredAfterRecycle, robot.GetMoleculesToGather(x, additionalExpertise, usedMolecules)))
-								.OrderByDescending(x => x.health)
-								.ToList();
-						}
+						var samplesLeft = samples
+							.Except(producedSamples.Select(x => x.sample))
+							.Except(gatheredSamples.Select(x => x.sample))
+							.ToList();
+						var gatheredAfterRecycleSamples = samplesLeft
+							.Where(x => robot.CanGather(turnState, x, additionalExpertise, usedMolecules, recycle: true, comingSoonMolecules: enemyProduceOrder?.usedMolecules))
+							.Select(x => new GatheredSample(x, robot.GetHealth(gameState, x, additionalExpertise), GatheredSampleType.GatheredAfterRecycle, robot.GetMoleculesToGather(x, additionalExpertise, usedMolecules)))
+							.OrderByDescending(x => x.health)
+							.ToList();
+						yield return new GatherOrder(
+							additionalExpertise, 
+							usedMolecules, 
+							producedSamples, 
+							gatheredSamples, 
+							gatheredNowSamples, 
+							gatheredSoonSamples, 
+							gatheredAfterRecycleSamples,
+							samplesLeft,
+							samples, 
+							eta, 
+							health);
 					}
 				}
 			}
+		}
+
+		public GatherOrder(MoleculeSet additionalExpertise, MoleculeSet usedMolecules, List<GatheredSample> producedSamples, List<GatheredSample> gatheredSamples, List<GatheredSample> gatheredNowSamples, List<GatheredSample> gatheredSoonSamples, List<GatheredSample> gatheredAfterRecycleSamples, List<Sample> samplesLeft, List<Sample> variant, int eta, int health)
+		{
+			this.additionalExpertise = additionalExpertise;
+			this.usedMolecules = usedMolecules;
+			this.producedSamples = producedSamples;
+			this.gatheredSamples = gatheredSamples;
+			this.gatheredNowSamples = gatheredNowSamples;
+			this.gatheredSoonSamples = gatheredSoonSamples;
+			this.gatheredAfterRecycleSamples = gatheredAfterRecycleSamples;
+			this.samplesLeft = samplesLeft;
+			this.variant = variant;
+			this.eta = eta;
+			this.health = health;
 		}
 	}
 }

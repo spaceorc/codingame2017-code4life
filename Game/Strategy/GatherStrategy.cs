@@ -18,11 +18,11 @@ namespace Game.Strategy
 			var enemyGatherOrder = turnState.enemy.target == ModuleType.MOLECULES 
 				|| turnState.enemy.target == ModuleType.LABORATORY
 				|| turnState.enemy.target == ModuleType.DIAGNOSIS && turnState.enemy.samples.All(x => x.Diagnosed)
-				? new GatherOrder(gameState, turnState, turnState.enemy)
+				? GatherOrder.GetGatherOrders(gameState, turnState, turnState.enemy).SelectBestOrder(GatherOrderDefaultComparer.Build(turnState.enemy))
 				: null;
 
-			var gatherOrder = new GatherOrder(gameState, turnState, turnState.robot);
-			if (!gatherOrder.gatheredSamples.Any())
+			var gatherOrder = GatherOrder.GetGatherOrders(gameState, turnState, turnState.robot).SelectBestOrder(GatherOrderDefaultComparer.Build(turnState.robot));
+			if (gatherOrder == null || !gatherOrder.gatheredSamples.Any())
 			{
 				if (turnState.robot.At(ModuleType.MOLECULES) && turnState.robot.storage.totalCount < Constants.MAX_STORAGE)
 				{
@@ -39,17 +39,21 @@ namespace Game.Strategy
 							}
 						}
 					}
-					foreach (var gatheredSample in gatherOrder.gatheredAfterRecycleSamples)
+					if (gatherOrder != null)
 					{
-						var moleculesToGather = gatheredSample.moleculesToGather.Intersect(turnState.available);
-						if (moleculesToGather.totalCount > 0)
+						foreach (var gatheredSample in gatherOrder.gatheredAfterRecycleSamples)
 						{
-							turnState.robot.Connect(moleculesToGather.Max()); // todo get with best selection (maybe take rare)
-							return null;
+							var moleculesToGather = gatheredSample.moleculesToGather.Intersect(turnState.available);
+							if (moleculesToGather.totalCount > 0)
+							{
+								turnState.robot.Connect(moleculesToGather.Max()); // todo get with best selection (maybe take rare)
+								return null;
+							}
 						}
+						
 					}
 				}
-				if (gatherOrder.producedSamples.Any())
+				if (gatherOrder != null && gatherOrder.producedSamples.Any())
 					return new ProduceStrategy(gameState);
 				return new DropStrategy(gameState);
 			}
