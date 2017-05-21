@@ -45,7 +45,7 @@ namespace Game.Strategy
 			{
 				var current = queue.Dequeue();
 				result.Add(current);
-				if (current.Count < samples.Count)
+				if (current.Count < samples.Count && current.Count < Constants.MAX_TRAY)
 				{
 					foreach (var sample in samples)
 					{
