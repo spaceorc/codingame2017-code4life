@@ -2,11 +2,17 @@
 {
 	public class Project
 	{
-		private readonly MoleculeSet expertise;
+		public readonly MoleculeSet expertise;
 
 		public Project(int a, int b, int c, int d, int e)
 		{
 			expertise = new MoleculeSet(a, b, c, d, e);
+		}
+
+		public bool IsComplete(Robot robot, MoleculeSet additionalExpertise = null)
+		{
+			var robotExp = robot.expertise.Add(additionalExpertise);
+			return expertise.Subtract(robotExp).totalCount == 0;
 		}
 
 		public string Dump()

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Game.State;
 
 namespace Game.Types
@@ -72,6 +73,14 @@ namespace Game.Types
 		public MoleculeSet GetCost(Sample sample, MoleculeSet additionalExpertise = null)
 		{
 			return sample.cost.Subtract(expertise).Subtract(additionalExpertise);
+		}
+
+		public int GetHealth(GameState gameState, Sample sample, MoleculeSet additionalExpertise = null)
+		{
+			var incompleteProjects = gameState.projects.Where(x => !x.IsComplete(this, additionalExpertise)).ToList();
+			var newAdditionalExpertise = new MoleculeSet().Add(sample.gain).Add(additionalExpertise);
+			var completeProjects = incompleteProjects.Where(x => x.IsComplete(this, newAdditionalExpertise)).ToList();
+			return sample.health + completeProjects.Count * Constants.PROJECT_HEALTH;
 		}
 	}
 }

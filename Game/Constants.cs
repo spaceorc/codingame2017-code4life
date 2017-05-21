@@ -11,6 +11,7 @@ namespace Game
 		public const int MAX_STORAGE = 10;
 		public const int MOLECULE_TYPE_COUNT = MoleculeType.E - MoleculeType.A + 1;
 		public const int TOTAL_TURNS = 200 * 2;
+		public const int PROJECT_HEALTH = 50;
 
 		public static readonly Dictionary<Tuple<ModuleType, ModuleType>, int> distances = new Dictionary<Tuple<ModuleType, ModuleType>, int>
 		{
