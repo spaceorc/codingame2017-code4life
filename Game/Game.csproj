@@ -44,6 +44,9 @@
   <ItemGroup>
     <Compile Include="Strategy\AnalyzeStrategy.cs" />
     <Compile Include="Strategy\Extensions.cs" />
+    <Compile Include="Strategy\GatheredSample.cs" />
+    <Compile Include="Strategy\GatheredSampleType.cs" />
+    <Compile Include="Strategy\GatherOrder.cs" />
     <Compile Include="Strategy\Heap.cs" />
     <Compile Include="Strategy\InitialStrategy.cs" />
     <Compile Include="Strategy\CollectStrategy.cs" />
@@ -52,6 +55,7 @@
     <Compile Include="EntryPoint.cs" />
     <Compile Include="State\GameState.cs" />
     <Compile Include="Strategy\GatherStrategy.cs" />
+    <Compile Include="Strategy\ProduceOrder.cs" />
     <Compile Include="Types\GoToResult.cs" />
     <Compile Include="Strategy\IRobotStrategy.cs" />
     <Compile Include="Types\ModuleType.cs" />

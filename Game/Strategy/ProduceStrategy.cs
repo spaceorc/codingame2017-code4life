@@ -15,11 +15,12 @@ namespace Game.Strategy
 
 		public override IRobotStrategy Process(TurnState turnState)
 		{
-			var canProduceSample = turnState.robot.samples.OrderByDescending(x => x.health).FirstOrDefault(x => turnState.robot.CanProduce(x));
+			var produceOrder = new ProduceOrder(gameState, turnState.robot);
+			var canProduceSample = produceOrder.producedSamples.FirstOrDefault();
 			if (canProduceSample == null)
 				return new GatherStrategy(gameState);
 			if (turnState.robot.GoTo(ModuleType.LABORATORY) == GoToResult.Arrived)
-				turnState.robot.Connect(canProduceSample.sampleId);
+				turnState.robot.Connect(canProduceSample.sample.sampleId);
 			return null;
 		}
 	}
