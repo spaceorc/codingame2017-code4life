@@ -28,24 +28,24 @@ namespace Game.Types
 			return $"{target}[eta:{eta}, score:{score}]: exp={expertise}, storage={storage}";
 		}
 
-		public GoToResult GoTo(ModuleType module)
+		public GoToResult GoTo(ModuleType module, string message = null)
 		{
 			if (target != module || eta != 0)
 			{
-				Console.WriteLine($"GOTO {module}");
+				Console.WriteLine($"GOTO {module} {message}");
 				return GoToResult.OnTheWay;
 			}
 			return GoToResult.Arrived;
 		}
 
-		public void Connect(int arg)
+		public void Connect(int arg, string message = null)
 		{
-			Console.WriteLine($"CONNECT {arg}");
+			Console.WriteLine($"CONNECT {arg} {message}");
 		}
 
-		public void Connect(MoleculeType moleculeType)
+		public void Connect(MoleculeType moleculeType, string message = null)
 		{
-			Console.WriteLine($"CONNECT {moleculeType}");
+			Console.WriteLine($"CONNECT {moleculeType} {message}");
 		}
 
 		public void Wait(string message = null)

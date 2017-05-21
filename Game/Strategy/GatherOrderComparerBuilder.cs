@@ -111,9 +111,9 @@ namespace Game.Strategy
 
 			public int Compare(GatherOrder x, GatherOrder y)
 			{
-				if (x.health > y.health)
+				if (x.health + x.variant.additionalHealth > y.health + y.variant.additionalHealth)
 					return X_BETTER;
-				if (x.health < y.health)
+				if (x.health + x.variant.additionalHealth < y.health + y.variant.additionalHealth)
 					return Y_BETTER;
 				return EQUAL;
 			}

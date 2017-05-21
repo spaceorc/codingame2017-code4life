@@ -42,7 +42,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Strategy\AcquireStrategy.cs" />
     <Compile Include="Strategy\AnalyzeStrategy.cs" />
+    <Compile Include="Strategy\DefaultVariantSource.cs" />
     <Compile Include="Strategy\Extensions.cs" />
     <Compile Include="Strategy\GatheredSample.cs" />
     <Compile Include="Strategy\GatheredSampleType.cs" />
@@ -57,9 +59,11 @@
     <Compile Include="EntryPoint.cs" />
     <Compile Include="State\GameState.cs" />
     <Compile Include="Strategy\GatherStrategy.cs" />
+    <Compile Include="Strategy\IVariantSource.cs" />
     <Compile Include="Strategy\OrderExtensions.cs" />
     <Compile Include="Strategy\ProduceOrder.cs" />
     <Compile Include="Strategy\ProduceOrderDefaultComparer.cs" />
+    <Compile Include="Strategy\Variant.cs" />
     <Compile Include="Types\GoToResult.cs" />
     <Compile Include="Strategy\IRobotStrategy.cs" />
     <Compile Include="Types\ModuleType.cs" />

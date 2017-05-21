@@ -13,7 +13,7 @@ namespace Game.Strategy
 
 		public override IRobotStrategy Process(TurnState turnState)
 		{
-			return new CollectStrategy(gameState);
+			return new AcquireStrategy(gameState);
 		}
 	}
 }

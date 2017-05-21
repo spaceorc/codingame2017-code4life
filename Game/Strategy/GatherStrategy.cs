@@ -55,7 +55,7 @@ namespace Game.Strategy
 				}
 				if (gatherOrder != null && gatherOrder.producedSamples.Any())
 					return new ProduceStrategy(gameState);
-				return new DropStrategy(gameState);
+				return new AcquireStrategy(gameState);
 			}
 
 			if (turnState.robot.GoTo(ModuleType.MOLECULES) == GoToResult.OnTheWay)

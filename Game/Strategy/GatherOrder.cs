@@ -16,20 +16,21 @@ namespace Game.Strategy
 		public readonly List<GatheredSample> gatheredSoonSamples;
 		public readonly List<GatheredSample> gatheredAfterRecycleSamples;
 		public readonly List<Sample> samplesLeft;
-		public readonly List<Sample> variant;
+		public readonly Variant variant;
 		public readonly int eta;
 		public readonly int health;
 
-		public static IEnumerable<GatherOrder> GetGatherOrders(GameState gameState, TurnState turnState, Robot robot, List<Sample> robotSamples = null)
+		public static IEnumerable<GatherOrder> GetGatherOrders(GameState gameState, TurnState turnState, Robot robot, IVariantSource variantSource = null)
 		{
 			var enemy = turnState.robots.Single(x => x != robot);
 			var enemyProduceOrder = enemy.target == ModuleType.LABORATORY
 				? ProduceOrder.GetProduceOrders(gameState, enemy).SelectBestOrder(new ProduceOrderDefaultComparer(enemy))
 				: null;
 
-			robotSamples = robotSamples ?? robot.samples;
-			foreach (var samples in robotSamples.Where(x => x.Diagnosed).ToList().GetVariants())
+			variantSource = variantSource ?? new DefaultVariantSource(robot);
+			foreach (var variant in variantSource.GetVariants())
 			{
+				var samples = variant.samples;
 				var additionalExpertise = new MoleculeSet();
 				var usedMolecules = new MoleculeSet();
 				var producedSamples = new List<GatheredSample>();
@@ -74,15 +75,15 @@ namespace Game.Strategy
 						gatheredSamples.Add(gatheredSample);
 					}
 				}
-				eta += robot.eta;
-				if (gatheredSamples.Any())
-					eta += Constants.distances[Tuple.Create(robot.target, ModuleType.MOLECULES)] + Constants.distances[Tuple.Create(ModuleType.MOLECULES, ModuleType.LABORATORY)];
-				else if (producedSamples.Any())
-					eta += Constants.distances[Tuple.Create(robot.target, ModuleType.LABORATORY)];
-				if (gatheredSoonSamples.Any())
-					eta += enemyProduceOrder?.eta ?? 0;
-				if (gatheredSamples.Any() || producedSamples.Any())
+				if (gatheredSamples.Any() || producedSamples.Any() || variant.additionalHealth > 0)
 				{
+					eta += variant.eta;
+					if (gatheredSamples.Any() || variant.requireMolecules)
+						eta += Constants.distances[Tuple.Create(variant.target, ModuleType.MOLECULES)] + Constants.distances[Tuple.Create(ModuleType.MOLECULES, ModuleType.LABORATORY)];
+					else if (producedSamples.Any())
+						eta += Constants.distances[Tuple.Create(variant.target, ModuleType.LABORATORY)];
+					if (gatheredSoonSamples.Any())
+						eta += enemyProduceOrder?.eta ?? 0;
 					if (gameState.currentTurn + eta*2 <= Constants.TOTAL_TURNS)
 					{
 						var samplesLeft = samples
@@ -103,7 +104,7 @@ namespace Game.Strategy
 							gatheredSoonSamples, 
 							gatheredAfterRecycleSamples,
 							samplesLeft,
-							samples, 
+							variant,
 							eta, 
 							health);
 					}
@@ -111,7 +112,7 @@ namespace Game.Strategy
 			}
 		}
 
-		public GatherOrder(MoleculeSet additionalExpertise, MoleculeSet usedMolecules, List<GatheredSample> producedSamples, List<GatheredSample> gatheredSamples, List<GatheredSample> gatheredNowSamples, List<GatheredSample> gatheredSoonSamples, List<GatheredSample> gatheredAfterRecycleSamples, List<Sample> samplesLeft, List<Sample> variant, int eta, int health)
+		public GatherOrder(MoleculeSet additionalExpertise, MoleculeSet usedMolecules, List<GatheredSample> producedSamples, List<GatheredSample> gatheredSamples, List<GatheredSample> gatheredNowSamples, List<GatheredSample> gatheredSoonSamples, List<GatheredSample> gatheredAfterRecycleSamples, List<Sample> samplesLeft, Variant variant, int eta, int health)
 		{
 			this.additionalExpertise = additionalExpertise;
 			this.usedMolecules = usedMolecules;

@@ -37,6 +37,7 @@ namespace Game.Strategy
 		public static List<List<Sample>> GetVariants(this List<Sample> samples)
 		{
 			var result = new List<List<Sample>>();
+			result.Add(new List<Sample>());
 
 			var queue = new Queue<List<Sample>>();
 			foreach (var sample in samples)
