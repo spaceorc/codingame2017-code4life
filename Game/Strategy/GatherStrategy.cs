@@ -22,14 +22,14 @@ namespace Game.Strategy
 				: null;
 
 			var gatherOrder = GatherOrder.GetGatherOrders(gameState, turnState, turnState.robot).SelectBestOrder(GatherOrderDefaultComparer.Build(turnState.robot));
-			if (gatherOrder == null || !gatherOrder.gatheredSamples.Any())
+			if (gatherOrder == null || !gatherOrder.gatheredSamples.Any(x => x.type == GatheredSampleType.Gathered || x.type == GatheredSampleType.GatheredSoon))
 			{
 				if (turnState.robot.At(ModuleType.MOLECULES) && turnState.robot.storage.totalCount < Constants.MAX_STORAGE)
 				{
 					// try to prevent enemy or gather "after recycle" samples
 					if (enemyGatherOrder != null)
 					{
-						foreach (var enemyGatheredSample in enemyGatherOrder.gatheredSamples.Concat(enemyGatherOrder.gatheredAfterRecycleSamples))
+						foreach (var enemyGatheredSample in enemyGatherOrder.gatheredSamples)
 						{
 							var enemyMoleculesToGather = enemyGatheredSample.moleculesToGather.Intersect(turnState.available);
 							if (enemyMoleculesToGather.totalCount > 0)
@@ -41,7 +41,7 @@ namespace Game.Strategy
 					}
 					if (gatherOrder != null)
 					{
-						foreach (var gatheredSample in gatherOrder.gatheredAfterRecycleSamples)
+						foreach (var gatheredSample in gatherOrder.gatheredSamples)
 						{
 							var moleculesToGather = gatheredSample.moleculesToGather.Intersect(turnState.available);
 							if (moleculesToGather.totalCount > 0)
@@ -61,14 +61,14 @@ namespace Game.Strategy
 			if (turnState.robot.GoTo(ModuleType.MOLECULES) == GoToResult.OnTheWay)
 				return null;
 
-			foreach (var gatheredSample in gatherOrder.gatheredSamples)
+			foreach (var gatheredSample in gatherOrder.gatheredSamples.Where(x => x.type == GatheredSampleType.Gathered || x.type == GatheredSampleType.GatheredSoon))
 			{
 				var moleculesToGather = gatheredSample.moleculesToGather.Intersect(turnState.available);
 				if (moleculesToGather.totalCount > 0)
 				{
 					if (enemyGatherOrder != null)
 					{
-						foreach (var enemyGatheredSample in enemyGatherOrder.gatheredSamples.Concat(enemyGatherOrder.gatheredAfterRecycleSamples))
+						foreach (var enemyGatheredSample in enemyGatherOrder.gatheredSamples)
 						{
 							var enemyMoleculesToGather = enemyGatheredSample.moleculesToGather.Intersect(turnState.available);
 							var moleculesWeAllNeed = enemyMoleculesToGather.Intersect(moleculesToGather);

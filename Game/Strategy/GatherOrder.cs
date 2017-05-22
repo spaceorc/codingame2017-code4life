@@ -10,11 +10,11 @@ namespace Game.Strategy
 	{
 		public readonly MoleculeSet additionalExpertise;
 		public readonly MoleculeSet usedMolecules;
+		public readonly MoleculeSet acquiredMolecules;
 		public readonly List<GatheredSample> producedSamples;
 		public readonly List<GatheredSample> gatheredSamples;
 		public readonly List<GatheredSample> gatheredNowSamples;
 		public readonly List<GatheredSample> gatheredSoonSamples;
-		public readonly List<GatheredSample> gatheredAfterRecycleSamples;
 		public readonly List<Sample> samplesLeft;
 		public readonly Variant variant;
 		public readonly int eta;
@@ -33,77 +33,95 @@ namespace Game.Strategy
 				var samples = variant.samples;
 				var additionalExpertise = new MoleculeSet();
 				var usedMolecules = new MoleculeSet();
+				var acquiredMolecules = new MoleculeSet();
 				var producedSamples = new List<GatheredSample>();
 				var gatheredSamples = new List<GatheredSample>();
 				var gatheredNowSamples = new List<GatheredSample>();
 				var gatheredSoonSamples = new List<GatheredSample>();
+				var recycledMolecules = new MoleculeSet();
 				var health = 0;
-				var eta = 0;
-				foreach (var sample in samples)
+				var eta = variant.eta;
+				var target = variant.target;
+				var requireMolecules = variant.requireMolecules;
+				while(samples.Any())
 				{
-					if (robot.CanProduce(sample, additionalExpertise, usedMolecules))
+					var gathered = false;
+					var gatheredSoon = false;
+					var produced = false;
+					foreach (var sample in samples)
 					{
-						eta++;
-						var additionalHealth = robot.GetHealth(gameState, sample, additionalExpertise);
-						health += additionalHealth;
-						usedMolecules = usedMolecules.Add(robot.GetCost(sample, additionalExpertise));
-						additionalExpertise = additionalExpertise.Add(sample.gain);
-						producedSamples.Add(new GatheredSample(sample, additionalHealth, GatheredSampleType.Produced, new MoleculeSet()));
+						if (robot.CanProduce(sample, additionalExpertise, usedMolecules, acquiredMolecules, recycledMolecules: recycledMolecules))
+						{
+							eta++;
+							var additionalHealth = robot.GetHealth(gameState, sample, additionalExpertise);
+							health += additionalHealth;
+							usedMolecules = usedMolecules.Add(robot.GetCost(sample, additionalExpertise));
+							additionalExpertise = additionalExpertise.Add(sample.gain);
+							producedSamples.Add(new GatheredSample(sample, additionalHealth, recycledMolecules.totalCount == 0 ? GatheredSampleType.Produced : GatheredSampleType.ProducedAfterRecycle, new MoleculeSet()));
+							produced = true;
+						}
+						else if (robot.CanGather(turnState, sample, additionalExpertise, usedMolecules, acquiredMolecules, recycledMolecules: recycledMolecules))
+						{
+							var moleculesToGather = robot.GetMoleculesToGather(sample, additionalExpertise, usedMolecules, acquiredMolecules, recycledMolecules);
+							acquiredMolecules = acquiredMolecules.Add(moleculesToGather);
+							eta += moleculesToGather.totalCount;
+							var additionalHealth = robot.GetHealth(gameState, sample, additionalExpertise);
+							health += additionalHealth;
+							usedMolecules = usedMolecules.Add(robot.GetCost(sample, additionalExpertise));
+							additionalExpertise = additionalExpertise.Add(sample.gain);
+							var gatheredSample = new GatheredSample(sample, additionalHealth, recycledMolecules.totalCount == 0 ? GatheredSampleType.Gathered : GatheredSampleType.GatheredAfterRecycle, moleculesToGather);
+							gatheredNowSamples.Add(gatheredSample);
+							gatheredSamples.Add(gatheredSample);
+							gathered = true;
+						}
+						else if (robot.CanGather(turnState, sample, additionalExpertise, usedMolecules, acquiredMolecules, comingSoonMolecules: enemyProduceOrder?.usedMolecules, recycledMolecules: recycledMolecules))
+						{
+							var moleculesToGather = robot.GetMoleculesToGather(sample, additionalExpertise, usedMolecules, acquiredMolecules, recycledMolecules);
+							acquiredMolecules = acquiredMolecules.Add(moleculesToGather);
+							eta += moleculesToGather.totalCount;
+							var additionalHealth = robot.GetHealth(gameState, sample, additionalExpertise);
+							health += additionalHealth;
+							usedMolecules = usedMolecules.Add(robot.GetCost(sample, additionalExpertise));
+							additionalExpertise = additionalExpertise.Add(sample.gain);
+							var gatheredSample = new GatheredSample(sample, additionalHealth, recycledMolecules.totalCount == 0 ? GatheredSampleType.GatheredAfterRecycle : GatheredSampleType.GatheredSoonAfterRecycle, moleculesToGather);
+							gatheredSoonSamples.Add(gatheredSample);
+							gatheredSamples.Add(gatheredSample);
+							gatheredSoon = true;
+						}
 					}
-					else if (robot.CanGather(turnState, sample, additionalExpertise, usedMolecules))
+					samples = samples
+						.Except(producedSamples.Select(x => x.sample))
+						.Except(gatheredSamples.Select(x => x.sample))
+						.ToList();
+					recycledMolecules = new MoleculeSet().Add(usedMolecules);
+					if (gathered || gatheredSoon)
+						eta += Constants.distances[Tuple.Create(target, ModuleType.MOLECULES)] + Constants.distances[Tuple.Create(ModuleType.MOLECULES, ModuleType.LABORATORY)];
+					else if (produced)
+						eta += Constants.distances[Tuple.Create(target, ModuleType.LABORATORY)];
+					else
 					{
-						var moleculesToGather = robot.GetMoleculesToGather(sample, additionalExpertise, usedMolecules);
-						eta += moleculesToGather.totalCount;
-						var additionalHealth = robot.GetHealth(gameState, sample, additionalExpertise);
-						health += additionalHealth;
-						usedMolecules = usedMolecules.Add(robot.GetCost(sample, additionalExpertise));
-						additionalExpertise = additionalExpertise.Add(sample.gain);
-						var gatheredSample = new GatheredSample(sample, additionalHealth, GatheredSampleType.Gathered, moleculesToGather);
-						gatheredNowSamples.Add(gatheredSample);
-						gatheredSamples.Add(gatheredSample);
+						if (requireMolecules)
+							eta += Constants.distances[Tuple.Create(target, ModuleType.MOLECULES)] + Constants.distances[Tuple.Create(ModuleType.MOLECULES, ModuleType.LABORATORY)];
+						break;
 					}
-					else if (robot.CanGather(turnState, sample, additionalExpertise, usedMolecules, comingSoonMolecules: enemyProduceOrder?.usedMolecules))
-					{
-						var moleculesToGather = robot.GetMoleculesToGather(sample, additionalExpertise, usedMolecules);
-						eta += moleculesToGather.totalCount;
-						var additionalHealth = robot.GetHealth(gameState, sample, additionalExpertise);
-						health += additionalHealth;
-						usedMolecules = usedMolecules.Add(robot.GetCost(sample, additionalExpertise));
-						additionalExpertise = additionalExpertise.Add(sample.gain);
-						var gatheredSample = new GatheredSample(sample, additionalHealth, GatheredSampleType.GatheredSoon, moleculesToGather);
-						gatheredSoonSamples.Add(gatheredSample);
-						gatheredSamples.Add(gatheredSample);
-					}
+					target = ModuleType.LABORATORY;
+					requireMolecules = false;
 				}
 				if (gatheredSamples.Any() || producedSamples.Any() || variant.additionalHealth > 0)
 				{
-					eta += variant.eta;
-					if (gatheredSamples.Any() || variant.requireMolecules)
-						eta += Constants.distances[Tuple.Create(variant.target, ModuleType.MOLECULES)] + Constants.distances[Tuple.Create(ModuleType.MOLECULES, ModuleType.LABORATORY)];
-					else if (producedSamples.Any())
-						eta += Constants.distances[Tuple.Create(variant.target, ModuleType.LABORATORY)];
 					if (gatheredSoonSamples.Any())
 						eta += enemyProduceOrder?.eta ?? 0;
 					if (gameState.currentTurn + eta*2 <= Constants.TOTAL_TURNS)
 					{
-						var samplesLeft = samples
-							.Except(producedSamples.Select(x => x.sample))
-							.Except(gatheredSamples.Select(x => x.sample))
-							.ToList();
-						var gatheredAfterRecycleSamples = samplesLeft
-							.Where(x => robot.CanGather(turnState, x, additionalExpertise, usedMolecules, recycle: true, comingSoonMolecules: enemyProduceOrder?.usedMolecules))
-							.Select(x => new GatheredSample(x, robot.GetHealth(gameState, x, additionalExpertise), GatheredSampleType.GatheredAfterRecycle, robot.GetMoleculesToGather(x, additionalExpertise, usedMolecules)))
-							.OrderByDescending(x => x.health)
-							.ToList();
 						yield return new GatherOrder(
 							additionalExpertise, 
 							usedMolecules, 
+							acquiredMolecules,
 							producedSamples, 
 							gatheredSamples, 
 							gatheredNowSamples, 
 							gatheredSoonSamples, 
-							gatheredAfterRecycleSamples,
-							samplesLeft,
+							samples,
 							variant,
 							eta, 
 							health);
@@ -112,15 +130,15 @@ namespace Game.Strategy
 			}
 		}
 
-		public GatherOrder(MoleculeSet additionalExpertise, MoleculeSet usedMolecules, List<GatheredSample> producedSamples, List<GatheredSample> gatheredSamples, List<GatheredSample> gatheredNowSamples, List<GatheredSample> gatheredSoonSamples, List<GatheredSample> gatheredAfterRecycleSamples, List<Sample> samplesLeft, Variant variant, int eta, int health)
+		public GatherOrder(MoleculeSet additionalExpertise, MoleculeSet usedMolecules, MoleculeSet acquiredMolecules, List<GatheredSample> producedSamples, List<GatheredSample> gatheredSamples, List<GatheredSample> gatheredNowSamples, List<GatheredSample> gatheredSoonSamples, List<Sample> samplesLeft, Variant variant, int eta, int health)
 		{
 			this.additionalExpertise = additionalExpertise;
 			this.usedMolecules = usedMolecules;
+			this.acquiredMolecules = acquiredMolecules;
 			this.producedSamples = producedSamples;
 			this.gatheredSamples = gatheredSamples;
 			this.gatheredNowSamples = gatheredNowSamples;
 			this.gatheredSoonSamples = gatheredSoonSamples;
-			this.gatheredAfterRecycleSamples = gatheredAfterRecycleSamples;
 			this.samplesLeft = samplesLeft;
 			this.variant = variant;
 			this.eta = eta;

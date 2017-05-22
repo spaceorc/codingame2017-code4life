@@ -5,6 +5,8 @@ namespace Game.Strategy
 		Produced,
 		Gathered,
 		GatheredSoon,
-		GatheredAfterRecycle
+		ProducedAfterRecycle,
+		GatheredAfterRecycle,
+		GatheredSoonAfterRecycle
 	}
 }

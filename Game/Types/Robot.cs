@@ -58,25 +58,25 @@ namespace Game.Types
 			return target == moduleType && eta == 0;
 		}
 
-		public MoleculeSet GetMoleculesToGather(Sample sample, MoleculeSet additionalExpertise = null, MoleculeSet usedMolecules = null)
+		public MoleculeSet GetMoleculesToGather(Sample sample, MoleculeSet additionalExpertise = null, MoleculeSet usedMolecules = null, MoleculeSet acquiredMolecules = null, MoleculeSet recycledMolecules = null)
 		{
 			var cost = GetCost(sample, additionalExpertise);
-			return cost.Subtract(storage.Subtract(usedMolecules));
+			return cost.Subtract(storage.Add(acquiredMolecules).Subtract(usedMolecules).Subtract(recycledMolecules));
 		}
 		
-		public bool CanGather(TurnState turnState, Sample sample, MoleculeSet additionalExpertise = null, MoleculeSet usedMolecules = null, bool recycle = false, MoleculeSet comingSoonMolecules = null)
+		public bool CanGather(TurnState turnState, Sample sample, MoleculeSet additionalExpertise = null, MoleculeSet usedMolecules = null, MoleculeSet acquiredMolecules = null, MoleculeSet recycledMolecules = null, MoleculeSet comingSoonMolecules = null)
 		{
-			var moleculesToGather = GetMoleculesToGather(sample, additionalExpertise, usedMolecules);
-			var available = turnState.available.Add(recycle ? usedMolecules : null).Add(comingSoonMolecules);
+			var moleculesToGather = GetMoleculesToGather(sample, additionalExpertise, usedMolecules, acquiredMolecules, recycledMolecules);
+			var available = turnState.available.Add(recycledMolecules).Add(comingSoonMolecules).Subtract(acquiredMolecules);
 			if (!available.IsSupersetOf(moleculesToGather))
 				return false;
-			var requiredStorage = storage.Add(moleculesToGather).Subtract(recycle ? usedMolecules : null);
+			var requiredStorage = storage.Add(moleculesToGather).Add(acquiredMolecules).Subtract(recycledMolecules);
 			return requiredStorage.totalCount <= Constants.MAX_STORAGE;
 		}
 
-		public bool CanProduce(Sample sample, MoleculeSet additionalExpertise = null, MoleculeSet usedMolecules = null)
+		public bool CanProduce(Sample sample, MoleculeSet additionalExpertise = null, MoleculeSet usedMolecules = null, MoleculeSet acquiredMolecules = null, MoleculeSet recycledMolecules = null)
 		{
-			var moleculesCanUse = storage.Add(expertise).Add(additionalExpertise).Subtract(usedMolecules);
+			var moleculesCanUse = storage.Add(acquiredMolecules).Add(expertise).Add(additionalExpertise).Subtract(usedMolecules).Subtract(recycledMolecules);
 			return moleculesCanUse.IsSupersetOf(sample.cost);
 		}
 
