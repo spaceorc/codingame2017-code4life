@@ -20,7 +20,7 @@ There are two main strategies working atop of this available gathering orders:
 - *GatherStrategy* starts when robot has already acquired chosen samples and ready to gather molecules or produce that samples.
 
 One more strategy, called *ProduceStrategy*, starts when there is no more molecules to gather, and no more molecules
-will come from enemy being produced has samples. This strategy moves robot to LABORATORY module and produces collected 
+will come from enemy being produced his samples. This strategy moves robot to LABORATORY module and produces collected 
 samples in s best way, defined in *ProduceOrder* and *ProduceOrderDefaultComparer* classes.
 
 ## Pack
