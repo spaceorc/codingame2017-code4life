@@ -43,7 +43,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Strategy\AcquireStrategy.cs" />
-    <Compile Include="Strategy\AnalyzeStrategy.cs" />
     <Compile Include="Strategy\DefaultVariantSource.cs" />
     <Compile Include="Strategy\Extensions.cs" />
     <Compile Include="Strategy\GatheredSample.cs" />
@@ -51,11 +50,8 @@
     <Compile Include="Strategy\GatherOrder.cs" />
     <Compile Include="Strategy\GatherOrderComparerBuilder.cs" />
     <Compile Include="Strategy\GatherOrderDefaultComparer.cs" />
-    <Compile Include="Strategy\Heap.cs" />
     <Compile Include="Strategy\InitialStrategy.cs" />
-    <Compile Include="Strategy\CollectStrategy.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="Strategy\DropStrategy.cs" />
     <Compile Include="EntryPoint.cs" />
     <Compile Include="State\GameState.cs" />
     <Compile Include="Strategy\GatherStrategy.cs" />
