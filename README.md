@@ -23,8 +23,5 @@ One more strategy, called *ProduceStrategy*, starts when there is no more molecu
 will come from enemy being produced his samples. This strategy moves robot to LABORATORY module and produces collected 
 samples in s best way, defined in *ProduceOrder* and *ProduceOrderDefaultComparer* classes.
 
-## Pack
-Packs all .cs files in solution into one .cs file as it required by codingame.
-
 ## Experiments
 Project for experiments. Entry point for replaying game turns from dumps
